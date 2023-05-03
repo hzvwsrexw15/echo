@@ -4,9 +4,9 @@
 
 Chat GPT chrome extension 助手，类似 monica
 
-![cover](https://help-doc.oss-cn-beijing.aliyuncs.com/WX20230503-183549%402x.png)
+![cover](./images/WX20230503-183549@2x.png)
 
-![cover](https://help-doc.oss-cn-beijing.aliyuncs.com/WX20230503-183623%402x.png)
+![cover](./images/WX20230503-183623%402x.png)
 
 ### 使用说明
 
