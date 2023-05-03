@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "echo",
+  "version": "1.0",
+  "description": "Chat AI chrome extension copilot",
+  "icons": {
+    "16": "images/echo.png",
+    "48": "images/echo.png",
+    "128": "images/echo.png"
+  },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "content_scripts": [
+    {
+      "js": ["scripts/content.js"],
+      "css": ["scripts/style.css"],
+      "all_frames": true,
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/echo.png", "images/echo1.png", "scripts/style.css"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "permissions": ["scripting", "activeTab", "identity"]
+}
