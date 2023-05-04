@@ -4,6 +4,7 @@ import { Input, Textarea } from "ant-design-vue";
 import { IClose, IMenu, ICode } from "./icons";
 import maps from "./icons/map";
 import { message } from "ant-design-vue";
+import { fetchAddShortCut, fetchUpdateShortCut } from "../api/shortCut";
 
 const iconList = reactive(Object.keys(maps));
 const emit = defineEmits();
@@ -35,43 +36,23 @@ const handleSelectIcon = (icon) => {
 const handleColse = () => {
   emit("close");
 };
-const add = () => {
-  chrome.runtime.sendMessage(
-    {
-      type: "post-data",
-      url: "/echo/shortcut/add",
-      params: {
-        ...form,
-      },
-    },
-    (response) => {
-      if (!response.status) {
-        emit("success");
-        message.success("添加快捷键成功");
-      } else {
-        message.error(response.message);
-      }
-    }
-  );
+const add = async () => {
+  try {
+    const res = await fetchAddShortCut(form);
+    emit("success");
+    message.success("添加快捷键成功");
+  } catch (e) {
+    message.error(err.message);
+  }
 };
-const update = () => {
-  chrome.runtime.sendMessage(
-    {
-      type: "post-data",
-      url: "/echo/shortcut/update",
-      params: {
-        ...form,
-      },
-    },
-    (response) => {
-      if (!response.status) {
-        emit("success");
-        message.success("修改快捷键成功");
-      } else {
-        message.error(response.message);
-      }
-    }
-  );
+const update = async () => {
+  try {
+    const res = await fetchUpdateShortCut(form);
+    emit("success");
+    message.success("修改快捷键成功");
+  } catch (e) {
+    message.error(err.message);
+  }
 };
 const handleSubmit = () => {
   if (!form.name) {

@@ -8,6 +8,7 @@ import Chat from "./components/Chat.vue";
 import AddShortCut from "./components/AddShortCut.vue";
 import AddApiKey from "./components/AddApiKey.vue";
 import { message } from "ant-design-vue";
+import { fetchShortCutList, fetchUpdateShortCut } from "./api/shortCut";
 
 const globalState = reactive({
   selectionText: "", // 选中文本
@@ -26,26 +27,19 @@ const globalState = reactive({
 });
 
 const getShortCutList = async () => {
-  chrome.runtime.sendMessage(
-    {
-      type: "post-data",
-      url: "/echo/shortcut/list",
-      params: {},
-    },
-    (response) => {
-      if (!response.status) {
-        globalState.shortCutList = [...response.data];
-        globalState.shortCutTops = [...response.data].filter((item) => {
-          return item.topped;
-        });
-        if (!globalState.shortCutTops.length) {
-          globalState.shortCutTops = [...response.data].slice(0, 2);
-        }
-      } else {
-        message.error(response.message);
+  fetchShortCutList({})
+    .then((response) => {
+      globalState.shortCutList = [...response];
+      globalState.shortCutTops = [...response].filter((item) => {
+        return item.topped;
+      });
+      if (!globalState.shortCutTops.length) {
+        globalState.shortCutTops = [...response].slice(0, 2);
       }
-    }
-  );
+    })
+    .catch((e) => {
+      message.error(e.message);
+    });
 };
 
 const handleShortCutClick = (item, selectedText) => {
@@ -75,29 +69,22 @@ const handleEditShortCut = (item) => {
   globalState.showShortCutAdd = true;
 };
 const handleToppedShortCut = (item) => {
-  chrome.runtime.sendMessage(
-    {
-      type: "post-data",
-      url: "/echo/shortcut/update",
-      params: {
-        ...item,
-        topped: !item.topped,
-        id: item._id,
-      },
-    },
-    (response) => {
-      if (!response.status) {
-        getShortCutList();
-        if (item.topped) {
-          message.success("取消置顶成功");
-        } else {
-          message.success("置顶成功");
-        }
+  fetchUpdateShortCut({
+    ...item,
+    topped: !item.topped,
+    id: item._id,
+  })
+    .then((response) => {
+      getShortCutList();
+      if (item.topped) {
+        message.success("取消置顶成功");
       } else {
-        message.error(response.message);
+        message.success("置顶成功");
       }
-    }
-  );
+    })
+    .catch((e) => {
+      message.error(e.message);
+    });
 };
 const getUserInfo = () => {
   chrome.runtime.sendMessage(

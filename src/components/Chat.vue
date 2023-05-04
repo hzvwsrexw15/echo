@@ -6,6 +6,12 @@ dayjs.extend(relativeTime);
 import { message, Spin, Modal } from "ant-design-vue";
 import { LoadingOutlined } from "@ant-design/icons-vue";
 import { IClose, IPlus, IHistory, ISend, IEdit, ISet, IExit } from "./icons";
+import { fetchShortCutDetail } from "../api/shortCut";
+import {
+  queryChatList,
+  queryChatContentList,
+  queryChatCompletion,
+} from "../api/openAI";
 
 const indicator = h(LoadingOutlined, {
   style: {
@@ -24,47 +30,28 @@ const curChat = ref(null);
 const chatContentList = ref([]);
 const textareaContent = ref("");
 const showLoading = ref(false);
-const fetchChatList = () => {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      {
-        type: "post-data",
-        url: "/echo/openai/chatList",
-        params: {},
-      },
-      (response) => {
-        if (!response.status) {
-          historys.value = response.data;
-          if (response.data && response.data.length) {
-            curChat.value = response.data[0];
-          }
-        } else {
-          message.error(response.message);
-        }
-        resolve();
-      }
-    );
-  });
-};
-const fetchChatContentList = () => {
-  if (!curChat.value) return;
-  chrome.runtime.sendMessage(
-    {
-      type: "post-data",
-      url: "/echo/openai/chatContentList",
-      params: {
-        chat_id: curChat.value._id,
-      },
-    },
-    (response) => {
-      if (!response.status) {
-        chatContentList.value = response.data || [];
-        chatContentList.value.reverse();
-      } else {
-        message.error(response.message);
-      }
+const fetchChatList = async () => {
+  try {
+    const response = await queryChatList();
+    historys.value = response;
+    if (response && response.length) {
+      curChat.value = response[0];
     }
-  );
+  } catch (e) {
+    message.error(e.message);
+  }
+};
+const fetchChatContentList = async () => {
+  if (!curChat.value) return;
+  try {
+    const response = await queryChatContentList({
+      chat_id: curChat.value._id,
+    });
+    chatContentList.value = response || [];
+    chatContentList.value.reverse();
+  } catch (e) {
+    message.error(e.message);
+  }
 };
 const handleClose = () => {
   emit("close");
@@ -77,7 +64,7 @@ const handleChangeChat = (item) => {
   historyVisible.value = false;
   fetchChatContentList();
 };
-const handleEnter = () => {
+const handleEnter = async () => {
   const content = textareaContent.value;
   if (!content) {
     return message.error("请输入内容");
@@ -96,33 +83,36 @@ const handleEnter = () => {
     .querySelector("#echo-content-root")
     .shadowRoot.querySelector(".chat-container").scrollTop = 9999;
   showLoading.value = true;
-  chrome.runtime.sendMessage(
-    {
-      type: "post-data",
-      url: "/echo/openai/chatCompletion",
-      params: {
-        prompt: "",
-        content: content,
-        shortCutId: curChat.value.short_cut_id,
-      },
-    },
-    (response) => {
-      if (!response.status) {
-        chatContentList.value.push({
-          chat_id: curChat.value._id,
-          content: response.data,
-          gmt_create: Date.now(),
-          gmt_update: Date.now(),
-          item_type: "reply",
-          userid: curChat.value.userid,
-          _id: Date.now(),
-        });
-      } else {
-        message.error(response.message);
-      }
-      showLoading.value = false;
+
+  try {
+    let prompt = "";
+    if (curChat.value.short_cut_id) {
+      const shortCut = await fetchShortCutDetail({
+        id: curChat.value.short_cut_id,
+      });
+      prompt = shortCut.prompt || "";
     }
-  );
+
+    const response = await queryChatCompletion({
+      prompt,
+      content,
+      shortCutId: curChat.value.short_cut_id,
+    });
+    chatContentList.value.push({
+      chat_id: curChat.value._id,
+      content: response,
+      gmt_create: Date.now(),
+      gmt_update: Date.now(),
+      item_type: "reply",
+      userid: curChat.value.userid,
+      _id: Date.now(),
+    });
+    showLoading.value = false;
+    await initData();
+  } catch (e) {
+    message.error(e.message);
+    showLoading.value = false;
+  }
 };
 const handleUpdateApiKey = () => {
   emit("updateApiKey");
@@ -139,9 +129,24 @@ const handleLogout = () => {
     },
   });
 };
-onMounted(async () => {
+const handleNewChat = () => {
+  curChat.value = {
+    gmt_create: Date.now(),
+    gmt_update: Date.now(),
+    last_message: "",
+    short_cut_id: "",
+    title: "新会话",
+    userid: "",
+    _id: Date.now(),
+  };
+  chatContentList.value = [];
+};
+const initData = async () => {
   await fetchChatList();
   await fetchChatContentList();
+};
+onMounted(async () => {
+  await initData();
 });
 </script>
 <template>
@@ -228,19 +233,20 @@ onMounted(async () => {
           <div class="input-panel">
             <div class="toolbar">
               <div class="lt">
-                <!-- <div
+                <div
                   class="btn echo-btn toolbar-btn primary-button small-button"
                   style="font-weight: normal"
+                  @click="handleNewChat"
                 >
                   <IPlus :width="14" :height="14"></IPlus><span>新会话</span>
-                </div> -->
+                </div>
                 <div
                   class="btn echo-btn toolbar-btn outline primary-outline-button small-button"
                   style="font-weight: normal"
                   @click="showHistoryDrawer"
                 >
                   <IHistory width="15" height="15"></IHistory>
-                  <span>历史记录</span>
+                  <span>会话记录</span>
                 </div>
               </div>
             </div>
