@@ -97,6 +97,7 @@ const handleEnter = async () => {
       prompt,
       content,
       shortCutId: curChat.value.short_cut_id,
+      chat_id: curChat.value._id,
     });
     chatContentList.value.push({
       chat_id: curChat.value._id,
@@ -137,7 +138,7 @@ const handleNewChat = () => {
     short_cut_id: "",
     title: "新会话",
     userid: "",
-    _id: Date.now(),
+    _id: null,
   };
   chatContentList.value = [];
 };
