@@ -92,9 +92,6 @@ const getUserInfo = () => {
     .then((response) => {
       globalState.userInfo = response;
       getShortCutList();
-      if (!response.openaiApiKey) {
-        globalState.showApiKeyAdd = true;
-      }
     })
     .catch((e) => {
       globalState.showLogin = true;
