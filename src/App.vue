@@ -9,6 +9,7 @@ import AddShortCut from "./components/AddShortCut.vue";
 import AddApiKey from "./components/AddApiKey.vue";
 import { message } from "ant-design-vue";
 import { fetchShortCutList, fetchUpdateShortCut } from "./api/shortCut";
+import { fetchUserInfo } from "./api/user";
 
 const globalState = reactive({
   selectionText: "", // 选中文本
@@ -87,22 +88,17 @@ const handleToppedShortCut = (item) => {
     });
 };
 const getUserInfo = () => {
-  chrome.runtime.sendMessage(
-    {
-      type: "get-user-data",
-    },
-    (response) => {
-      if (!response.status) {
-        globalState.userInfo = response.data;
-        getShortCutList();
-        if (!response.data.openaiApiKey) {
-          globalState.showApiKeyAdd = true;
-        }
-      } else {
-        globalState.showLogin = true;
+  fetchUserInfo({})
+    .then((response) => {
+      globalState.userInfo = response;
+      getShortCutList();
+      if (!response.openaiApiKey) {
+        globalState.showApiKeyAdd = true;
       }
-    }
-  );
+    })
+    .catch((e) => {
+      globalState.showLogin = true;
+    });
 };
 const handleUpdateApiKey = (form) => {
   chrome.runtime.sendMessage(

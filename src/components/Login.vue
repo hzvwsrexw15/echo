@@ -3,6 +3,7 @@ import { ref, reactive, defineEmits } from "vue";
 import { Input, Button, message } from "ant-design-vue";
 import { UserOutlined, LockOutlined } from "@ant-design/icons-vue";
 import { IClose, IGithub } from "./icons";
+import { fetchLogin, fetchRegister, fetchSendSms } from "../api/user";
 
 const emit = defineEmits();
 const icon = chrome.runtime.getURL("images/echo.png");
@@ -14,8 +15,12 @@ const registerFormState = reactive({
   username: "",
   password: "",
   confirmPassword: "",
+  code: "",
 });
 const cur_tab = ref("login");
+const registercCodetText = ref("获取验证码");
+const registerDisabledCode = ref(false);
+const registercCodetTimes = ref(59);
 const handleClose = () => {
   emit("close");
 };
@@ -24,30 +29,37 @@ const handlelogin = () => {
     message.error("请输入手机号");
     return;
   }
+  // 校验手机号
+  const phoneReg = /^1[3456789]\d{9}$/;
+  if (!phoneReg.test(formState.username)) {
+    message.error("请输入正确的手机号");
+    return;
+  }
   if (!formState.password) {
     message.error("请输入密码");
     return;
   }
-  chrome.runtime.sendMessage(
-    {
-      type: "user-login",
-      params: {
-        username: formState.username,
-        password: formState.password,
-      },
-    },
-    (response) => {
-      // 登录成功
-      if (!response.status) {
-        message.info("登录成功！");
-        emit("success");
-      }
-    }
-  );
+  fetchLogin({
+    username: formState.username,
+    password: formState.password,
+  }).then((res) => {
+    message.info("登录成功！");
+    emit("success");
+  });
 };
 const handleRegister = () => {
   if (!registerFormState.username) {
     message.error("请输入手机号");
+    return;
+  }
+  // 校验手机号
+  const phoneReg = /^1[3456789]\d{9}$/;
+  if (!phoneReg.test(registerFormState.username)) {
+    message.error("请输入正确的手机号");
+    return;
+  }
+  if (!registerFormState.code) {
+    message.error("请输入验证码");
     return;
   }
   if (!registerFormState.password) {
@@ -58,25 +70,47 @@ const handleRegister = () => {
     message.error("两次密码不一致");
     return;
   }
-  chrome.runtime.sendMessage(
-    {
-      type: "post-data",
-      url: "/user/register",
-      params: {
-        username: registerFormState.username,
-        password: registerFormState.password,
-      },
-    },
-    (response) => {
-      // 注册成功
-      if (!response.status) {
-        message.info("注册成功！");
-        emit("success");
-      } else {
-        message.error(response.message);
-      }
+  fetchRegister({
+    username: registerFormState.username,
+    password: registerFormState.password,
+    code: registerFormState.code,
+  })
+    .then((res) => {
+      message.info("注册成功！");
+      emit("success");
+    })
+    .catch((e) => {
+      message.error(e.message);
+    });
+};
+const handleGetVerifyCode = () => {
+  if (!registerFormState.username) {
+    message.error("请输入手机号");
+    return;
+  }
+  // 校验手机号
+  const phoneReg = /^1[3456789]\d{9}$/;
+  if (!phoneReg.test(registerFormState.username)) {
+    message.error("请输入正确的手机号");
+    return;
+  }
+  let timer = setInterval(() => {
+    registercCodetTimes.value--;
+    if (registercCodetTimes.value === 0) {
+      clearInterval(timer);
+      registercCodetText.value = "获取验证码";
+      registerDisabledCode.value = false;
+      registercCodetTimes.value = 59;
+    } else {
+      registercCodetText.value = `${registercCodetTimes.value}秒后重试`;
+      registerDisabledCode.value = true;
     }
-  );
+  }, 1000);
+  fetchSendSms({
+    phone: registerFormState.username,
+  }).then(() => {
+    message.info("验证码已发送");
+  });
 };
 </script>
 <template>
@@ -150,6 +184,25 @@ const handleRegister = () => {
               ><UserOutlined style="color: rgba(0, 0, 0, 0.25)"
             /></template>
           </Input>
+        </div>
+        <div class="form-item">
+          <div class="flex">
+            <Input
+              v-model:value="registerFormState.code"
+              placeholder="验证码"
+              class="code-inp"
+              size="large"
+            >
+            </Input>
+            <div style="width: 105px">
+              <Button
+                type="link"
+                :disabled="registerDisabledCode"
+                @click="handleGetVerifyCode"
+                >{{ registercCodetText }}</Button
+              >
+            </div>
+          </div>
         </div>
         <div class="form-item">
           <Input
@@ -330,5 +383,15 @@ const handleRegister = () => {
 }
 .form-item {
   margin-bottom: 20px;
+}
+.flex {
+  display: flex;
+  align-items: center;
+}
+.mr-5 {
+  margin-right: 5px;
+}
+.code-inp {
+  width: 120px;
 }
 </style>
