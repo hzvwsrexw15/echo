@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 
+import "./assets/main.css";
 import "ant-design-vue/lib/date-picker/style/index.css";
 import "ant-design-vue/lib/tag/style/index.css";
 import "ant-design-vue/lib/button/style/index.css";
