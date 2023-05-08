@@ -1,9 +1,12 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import "ant-design-vue/lib/date-picker/style/css";
-import "ant-design-vue/lib/input/style/css";
-import "ant-design-vue/lib/message/style/css";
-import "ant-design-vue/lib/modal/style/css";
+
+import "ant-design-vue/lib/date-picker/style/index.css";
+import "ant-design-vue/lib/tag/style/index.css";
+import "ant-design-vue/lib/button/style/index.css";
+import "ant-design-vue/lib/input/style/index.css";
+import "ant-design-vue/lib/message/style/index.css";
+import "ant-design-vue/lib/modal/style/index.css";
 
 insertElementToBody(App);
 
