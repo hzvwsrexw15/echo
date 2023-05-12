@@ -2,7 +2,7 @@
 
 ### 介绍
 
-Chat GPT chrome extension 助手，类似 monica
+Chat GPT chrome extension 助手，类似 monica，基于GPT-3.5，每天10次免费额度(资本有限，望见谅)
 
 ![cover](./images/WX20230503-183549@2x.png)
 
