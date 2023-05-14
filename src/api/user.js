@@ -70,3 +70,22 @@ export function fetchSendSms(params) {
     );
   });
 }
+
+export function queryAppVersion(params) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      {
+        type: "post-data",
+        url: "/echo/checkVersion",
+        params,
+      },
+      (response) => {
+        if (!response.status) {
+          resolve(response.data);
+        } else {
+          reject(response);
+        }
+      }
+    );
+  });
+}

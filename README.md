@@ -4,6 +4,8 @@
 
 Chat GPT chrome extension 助手，类似 monica
 
+![cover](./images/WX20230514-213536%402x.png)
+
 ![cover](./images/WX20230503-183549@2x.png)
 
 ![cover](./images/WX20230503-183623%402x.png)
@@ -12,7 +14,7 @@ Chat GPT chrome extension 助手，类似 monica
 
 #### 扩展程序包
 
-1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=1683555955808">下载</a>，下载扩展程序压缩包
+1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip">下载</a>，下载扩展程序压缩包
 
 2、打开 chrome 浏览器，点击”chorme“=>”窗口“=>"扩展程序"
 
@@ -33,3 +35,11 @@ Chat GPT chrome extension 助手，类似 monica
 `npm run build`
 
 4、在 chrome 扩展程序中使用，点击”chorme“=>”窗口“=>"扩展程序"=>"加载已解压的扩展程序"，选择项目目录即可
+
+### 反馈建议
+
+1、提 <a href="https://github.com/hzvwsrexw15/echo/issues">Issues</a>
+
+2、添加微信，直接反馈
+
+<img alt="wechat" src="./images/WechatUser.jpeg" width="200"/>
