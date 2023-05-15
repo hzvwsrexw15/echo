@@ -227,7 +227,7 @@ const handleEnterOnlineChat = async () => {
 const fetchVersion = async () => {
   try {
     const response = await queryAppVersion({
-      version: "0.0.1",
+      version: "0.0.2",
     });
     shouldUpdateVersion.value = response;
   } catch (e) {
@@ -314,9 +314,7 @@ onMounted(async () => {
                 >
                   <div class="feedback message-content-wrap">
                     <div class="chat-content">
-                      <p>
-                        {{ item.content }}
-                      </p>
+                      <p v-html="item.content"></p>
                     </div>
                   </div>
                 </div>
@@ -324,9 +322,7 @@ onMounted(async () => {
                   <div class="feedback message-content-wrap">
                     <div class="chat-content markdown-body gpt-markdown">
                       <div class="markdown __markdown light">
-                        <p>
-                          {{ item.content }}
-                        </p>
+                        <p v-html="item.content"></p>
                       </div>
                     </div>
                   </div>
@@ -419,9 +415,7 @@ onMounted(async () => {
                 >
                   <div class="feedback message-content-wrap">
                     <div class="chat-content">
-                      <p>
-                        {{ item.content }}
-                      </p>
+                      <p v-html="item.content"></p>
                     </div>
                   </div>
                 </div>
@@ -429,9 +423,7 @@ onMounted(async () => {
                   <div class="feedback message-content-wrap">
                     <div class="chat-content markdown-body gpt-markdown">
                       <div class="markdown __markdown light">
-                        <p>
-                          {{ item.content }}
-                        </p>
+                        <p v-html="item.content"></p>
                       </div>
                     </div>
                   </div>
@@ -735,6 +727,7 @@ onMounted(async () => {
   padding: 8px 12px;
   max-width: 100%;
 }
+
 .chat .chat-box .wrapper .chat-container .message-content-wrap .chat-content {
   transition: box-shadow 0.1s ease;
 }
@@ -750,6 +743,12 @@ onMounted(async () => {
 }
 .chat .chat-box .wrapper .chat-container .chat-question .chat-content p {
   white-space: pre-wrap;
+}
+/deep/.chat .chat-box .wrapper .chat-container .chat-item .chat-content p a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: none;
+  text-decoration: none;
 }
 .chat .chat-box .wrapper .chat-container .chat-reply {
   text-align: left;
