@@ -1,9 +1,9 @@
 <script setup>
-import { ref, reactive, defineEmits, onMounted, h } from "vue";
+import { ref, defineEmits, onMounted, h, nextTick } from "vue";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
-import { message, Spin, Modal } from "ant-design-vue";
+import { message, Spin, Modal, Tag } from "ant-design-vue";
 import { LoadingOutlined } from "@ant-design/icons-vue";
 import { IClose, IPlus, IHistory, ISend, IEdit, ISet, IExit } from "./icons";
 import { fetchShortCutDetail } from "../api/shortCut";
@@ -25,8 +25,6 @@ const indicator = h(LoadingOutlined, {
 const emit = defineEmits();
 const icon = chrome.runtime.getURL("images/echo.png");
 
-const curTab = ref("chat"); // chat or online
-
 const historyVisible = ref(false);
 const historys = ref([]);
 const onlineChatList = ref([]);
@@ -35,13 +33,19 @@ const curOnlineChat = ref(null);
 const chatContentList = ref([]);
 const onlineChatContentList = ref([]);
 const textareaContent = ref("");
-const onlineTextareaContent = ref("");
 const showLoading = ref(false);
-const onlineShowLoading = ref(false);
 const shouldUpdateVersion = ref(false);
+const suggestions = ref(["今日北京市朝阳区天气情况？", "当前有哪些热点新闻？"]);
+const scrollToBottom = () => {
+  nextTick(() => {
+    document
+      .querySelector("#echo-content-root")
+      .shadowRoot.querySelector(".chat-container").scrollTop = 9999;
+  });
+};
 const fetchChatList = async () => {
   try {
-    const response = await queryChatList({ type: "chat" });
+    const response = await queryChatList();
     historys.value = response;
     if (response && response.length) {
       curChat.value = response[0];
@@ -52,7 +56,7 @@ const fetchChatList = async () => {
 };
 const fetchOnlineChatList = async () => {
   try {
-    const response = await queryChatList({ type: "online" });
+    const response = await queryChatList();
     onlineChatList.value = response;
     if (response && response.length) {
       curOnlineChat.value = response[0];
@@ -91,10 +95,11 @@ const handleClose = () => {
 const showHistoryDrawer = () => {
   historyVisible.value = true;
 };
-const handleChangeChat = (item) => {
+const handleChangeChat = async (item) => {
   curChat.value = item;
   historyVisible.value = false;
-  fetchChatContentList();
+  await fetchChatContentList();
+  scrollToBottom();
 };
 const handleEnter = async () => {
   const content = textareaContent.value;
@@ -111,9 +116,7 @@ const handleEnter = async () => {
     _id: Date.now(),
   });
   textareaContent.value = "";
-  document
-    .querySelector("#echo-content-root")
-    .shadowRoot.querySelector(".chat-container").scrollTop = 9999;
+  scrollToBottom();
   showLoading.value = true;
 
   try {
@@ -130,7 +133,6 @@ const handleEnter = async () => {
       content,
       shortCutId: curChat.value.short_cut_id,
       chat_id: curChat.value._id,
-      type: "chat",
     });
     chatContentList.value.push({
       chat_id: curChat.value._id,
@@ -176,58 +178,10 @@ const handleNewChat = () => {
   };
   chatContentList.value = [];
 };
-const handleChnageTab = (tab) => {
-  curTab.value = tab;
-};
-const handleEnterOnlineChat = async () => {
-  const content = onlineTextareaContent.value;
-  if (!content) {
-    return message.error("请输入内容");
-  }
-  onlineChatContentList.value.push({
-    chat_id: curOnlineChat.value?._id,
-    content,
-    gmt_create: Date.now(),
-    gmt_update: Date.now(),
-    item_type: "intent",
-    userid: curOnlineChat.value?.userid,
-    _id: Date.now(),
-  });
-  onlineTextareaContent.value = "";
-  document
-    .querySelector("#echo-content-root")
-    .shadowRoot.querySelector(".online-chat-container").scrollTop = 9999;
-  onlineShowLoading.value = true;
-
-  try {
-    const response = await queryChatCompletion({
-      prompt: "",
-      content,
-      shortCutId: "",
-      chat_id: curOnlineChat.value?._id,
-      type: "online",
-    });
-    onlineChatContentList.value.push({
-      chat_id: curOnlineChat.value?._id,
-      content: response,
-      gmt_create: Date.now(),
-      gmt_update: Date.now(),
-      item_type: "reply",
-      userid: curOnlineChat.value?.userid,
-      _id: Date.now(),
-    });
-    onlineShowLoading.value = false;
-    await fetchOnlineChatList();
-    await fetchOnlineChatContentList();
-  } catch (e) {
-    message.error(e.message);
-    onlineShowLoading.value = false;
-  }
-};
 const fetchVersion = async () => {
   try {
     const response = await queryAppVersion({
-      version: "0.0.2",
+      version: "0.0.3",
     });
     shouldUpdateVersion.value = response;
   } catch (e) {
@@ -241,8 +195,12 @@ const initData = async () => {
   await fetchOnlineChatContentList();
   await fetchVersion();
 };
+const handleClickSuggestion = (item) => {
+  textareaContent.value = item;
+};
 onMounted(async () => {
   await initData();
+  scrollToBottom();
 });
 </script>
 <template>
@@ -279,34 +237,17 @@ onMounted(async () => {
     </header>
     <div class="tabs-wrapper">
       <div class="main-window-tabs">
-        <div
-          class="tab-item"
-          :class="{ 'tab-item-active': curTab === 'chat' }"
-          @click="handleChnageTab('chat')"
-        >
+        <div class="tab-item tab-item-active">
           <div>聊天</div>
         </div>
-        <div
-          class="tab-item"
-          :class="{ 'tab-item-active': curTab === 'online' }"
-          @click="handleChnageTab('online')"
-        >
-          <div>联网任务</div>
-        </div>
-        <div
-          class="tab-active-bar"
-          :style="{
-            left: curTab === 'chat' ? '-1px' : '55px',
-            width: curTab === 'chat' ? '32px' : '64px',
-          }"
-        ></div>
+        <div class="tab-active-bar" style="left: -1px; width: 32px"></div>
       </div>
     </div>
-    <div class="chat-wrapper" style="display: flex" v-if="curTab === 'chat'">
+    <div class="chat-wrapper" style="display: flex">
       <div class="chat chat_light">
         <div class="chat-box">
           <div class="wrapper">
-            <div class="chat-container" style="padding-bottom: 194px">
+            <div class="chat-container" style="padding-bottom: 60px">
               <template v-for="item in chatContentList" :key="item._id">
                 <div
                   class="chat-item chat-question"
@@ -334,6 +275,21 @@ onMounted(async () => {
                     <div class="markdown __markdown light">
                       <Spin :indicator="indicator" />
                     </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="chat-suggestion"
+                v-if="!curChat || !curChat.short_cut_id"
+              >
+                <div class="suggestion-bar">
+                  <div
+                    class="suggestion-item"
+                    v-for="(item, key) in suggestions"
+                    :key="key"
+                    @click="handleClickSuggestion(item)"
+                  >
+                    {{ item }}
                   </div>
                 </div>
               </div>
@@ -381,8 +337,8 @@ onMounted(async () => {
                         <span></span>
                       </div>
                       <textarea
-                        placeholder="问我任何问题...(ctrl+enter发送)"
-                        @keypress.enter.ctrl="handleEnter"
+                        placeholder="问我任何问题..."
+                        @keypress.enter="handleEnter"
                         v-model="textareaContent"
                       ></textarea>
                     </div>
@@ -390,82 +346,6 @@ onMounted(async () => {
                 </div>
                 <div class="input-toolbar">
                   <div class="input-msg-btn send" @click="handleEnter">
-                    <ISend width="16" height="16"></ISend>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="chat-wrapper" style="display: flex" v-if="curTab === 'online'">
-      <div class="chat chat_light">
-        <div class="chat-box">
-          <div class="wrapper">
-            <div
-              class="online-chat-container chat-container"
-              style="padding-bottom: 194px"
-            >
-              <template v-for="item in onlineChatContentList" :key="item._id">
-                <div
-                  class="chat-item chat-question"
-                  v-if="item.item_type === 'intent'"
-                >
-                  <div class="feedback message-content-wrap">
-                    <div class="chat-content">
-                      <p v-html="item.content"></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="chat-item chat-reply" v-else>
-                  <div class="feedback message-content-wrap">
-                    <div class="chat-content markdown-body gpt-markdown">
-                      <div class="markdown __markdown light">
-                        <p v-html="item.content"></p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </template>
-              <div class="chat-item chat-reply" v-if="onlineShowLoading">
-                <div class="feedback message-content-wrap">
-                  <div class="chat-content markdown-body gpt-markdown">
-                    <div class="markdown __markdown light">
-                      <Spin :indicator="indicator" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="input-panel">
-            <div class="toolbar"></div>
-            <div class="input-box">
-              <div class="input">
-                <div class="input-container">
-                  <div class="input-msg-content">
-                    <div class="textarea">
-                      <div
-                        class="mirror-node"
-                        style="max-height: 100px; min-height: 32px"
-                      >
-                        <span></span>
-                      </div>
-                      <textarea
-                        placeholder="问我任何问题...(ctrl+enter发送)"
-                        @keypress.enter.ctrl="handleEnterOnlineChat"
-                        v-model="onlineTextareaContent"
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="input-toolbar">
-                  <div
-                    class="input-msg-btn send"
-                    @click="handleEnterOnlineChat"
-                  >
                     <ISend width="16" height="16"></ISend>
                   </div>
                 </div>
@@ -504,6 +384,8 @@ onMounted(async () => {
                   <div class="conv-item-header">
                     <span class="title"
                       ><span class="title-text"
+                        ><Tag v-if="item.short_cut_id" color="processing"
+                          >快捷操作</Tag
                         ><span class="">{{ item.title }}</span></span
                       ><span class="edit">
                         <IEdit width="16" height="16"></IEdit> </span></span
@@ -1080,5 +962,34 @@ onMounted(async () => {
   position: absolute;
   inset: 10px;
   background-color: transparent;
+}
+.chat-suggestion {
+  margin-top: 120px;
+  margin-bottom: -30px;
+}
+.suggestion-bar {
+  visibility: visible;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  box-sizing: border-box;
+  padding-left: 75px;
+}
+.suggestion-item {
+  display: inline-flex;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  max-width: 100%;
+  border: 1px solid rgba(56, 114, 224, 0.48);
+  border-radius: 8px 8px 0;
+  background: #ffffff;
+  transition: border 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 16px;
+  color: #225ebe;
 }
 </style>
