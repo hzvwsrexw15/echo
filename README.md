@@ -2,11 +2,17 @@
 
 ### 介绍
 
-Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5，每天 10 次免费额度(资本有限，望见谅)
+Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5，每天 10 次免费额度(资金有限，望见谅)
 
-![cover](./images/WX20230514-213536%402x.png)
+**联网查询**
+
+![cover](./images/WX20230521-133416%402x.png)
+
+**快捷操作**
 
 ![cover](./images/WX20230503-183549@2x.png)
+
+**直接对话**
 
 ![cover](./images/WX20230503-183623%402x.png)
 
@@ -14,7 +20,7 @@ Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5，每天 10 �
 
 #### 扩展程序包
 
-1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=1684336136457">下载</a>，下载扩展程序压缩包
+1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=1684647523095">下载</a>，下载扩展程序压缩包
 
 2、打开 chrome 浏览器，点击”chorme“=>”窗口“=>"扩展程序"
 

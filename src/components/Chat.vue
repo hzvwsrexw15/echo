@@ -35,12 +35,16 @@ const onlineChatContentList = ref([]);
 const textareaContent = ref("");
 const showLoading = ref(false);
 const shouldUpdateVersion = ref(false);
-const suggestions = ref(["今日北京市朝阳区天气情况？", "当前有哪些热点新闻？"]);
+const suggestions = ref([
+  "联网查询今日国外新闻热点",
+  "今日北京市朝阳区天气情况？",
+  "当前国内有哪些热点新闻？",
+]);
 const scrollToBottom = () => {
   nextTick(() => {
     document
       .querySelector("#echo-content-root")
-      .shadowRoot.querySelector(".chat-container").scrollTop = 9999;
+      .shadowRoot.querySelector(".chat-container").scrollTop = 999999;
   });
 };
 const fetchChatList = async () => {
@@ -181,7 +185,7 @@ const handleNewChat = () => {
 const fetchVersion = async () => {
   try {
     const response = await queryAppVersion({
-      version: "0.0.3",
+      version: "0.0.4",
     });
     shouldUpdateVersion.value = response;
   } catch (e) {
