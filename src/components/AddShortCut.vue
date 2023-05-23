@@ -69,6 +69,12 @@ const handleSubmit = () => {
     add();
   }
 };
+const showTemplate = () => {
+  chrome.runtime.sendMessage({
+    type: "goto-page",
+    url: "set.html",
+  });
+};
 </script>
 <template>
   <div class="echo-modal-wrapper black-mask" style="position: fixed">
@@ -134,7 +140,13 @@ const handleSubmit = () => {
           </div>
           <div class="item">
             <div class="label">提示词</div>
-            <p class="description">您可以自定义您的提示词格式。</p>
+            <p class="description">
+              您可以自定义您的提示词格式。<span
+                class="link"
+                @click="showTemplate"
+                >查看更多信息</span
+              >
+            </p>
             <div class="input">
               <Textarea
                 placeholder="提示词的完整内容"
@@ -451,5 +463,12 @@ const handleSubmit = () => {
   justify-content: center;
   color: #fff;
   line-height: 24px;
+}
+.link {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+  text-decoration: none;
+  color: #3872e0;
 }
 </style>

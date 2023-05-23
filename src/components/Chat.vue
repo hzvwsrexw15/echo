@@ -156,7 +156,10 @@ const handleEnter = async () => {
   }
 };
 const handleUpdateApiKey = () => {
-  emit("updateApiKey");
+  chrome.runtime.sendMessage({
+    type: "goto-page",
+    url: "set.html",
+  });
 };
 const handleLogout = () => {
   Modal.confirm({
@@ -185,7 +188,7 @@ const handleNewChat = () => {
 const fetchVersion = async () => {
   try {
     const response = await queryAppVersion({
-      version: "0.0.4",
+      version: "0.0.5",
     });
     shouldUpdateVersion.value = response;
   } catch (e) {

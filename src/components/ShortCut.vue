@@ -38,6 +38,12 @@ const handleEdit = (item) => {
 const handleTopped = (item) => {
   emit("toppedShortCut", item);
 };
+const showTemplate = () => {
+  chrome.runtime.sendMessage({
+    type: "goto-page",
+    url: "set.html",
+  });
+};
 onMounted(() => {
   document.addEventListener("mouseup", () => {
     if (selectioning.value) {
@@ -70,14 +76,16 @@ onMounted(() => {
       event.stopPropagation();
     });
   document.addEventListener("selectionchange", (event) => {
-    const selection = document.getSelection();
-    const text = selection.toString();
-    const oRange = selection.getRangeAt(0); //get the text range
-    const oRect = oRange.getBoundingClientRect();
-    selectionRect.value = oRect;
-    selectioning.value = true;
-    selectedText.value = text;
-    emit("selection", selectionRect.value, selectedText.value);
+    try {
+      const selection = document.getSelection();
+      const text = selection.toString();
+      const oRange = selection.getRangeAt(0); //get the text range
+      const oRect = oRange.getBoundingClientRect();
+      selectionRect.value = oRect;
+      selectioning.value = true;
+      selectedText.value = text;
+      emit("selection", selectionRect.value, selectedText.value);
+    } catch (e) {}
   });
 });
 </script>
@@ -138,7 +146,11 @@ onMounted(() => {
         <div class="menu-inner">
           <div class="user-prompt">
             <div class="header">
-              <span class="title">快捷指令</span>
+              <span class="title"
+                >快捷指令<span class="link" @click="showTemplate"
+                  >添加更多</span
+                ></span
+              >
               <span class="control" @click="handleAddShortCut">
                 <svg
                   class="icon"
@@ -424,5 +436,14 @@ onMounted(() => {
 }
 .float-shortcut-btn .action-menu .menu-inner .disable-button .arrow {
   opacity: 0.6;
+}
+.link {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+  text-decoration: none;
+  color: #3872e0;
+  margin-left: 5px;
+  font-size: 12px;
 }
 </style>

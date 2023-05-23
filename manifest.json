@@ -25,5 +25,5 @@
       "matches": ["<all_urls>"]
     }
   ],
-  "permissions": ["scripting", "activeTab", "identity"]
+  "permissions": ["scripting", "activeTab", "identity", "tabs"]
 }

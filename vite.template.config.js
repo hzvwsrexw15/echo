@@ -20,12 +20,12 @@ export default defineConfig({
   },
   css: {},
   build: {
-    outDir: "scripts",
+    outDir: "scripts/set",
     cssCodeSplit: false,
     emptyOutDir: false,
     rollupOptions: {
       input: {
-        template: "src/main-t.js",
+        set: "src/main-s.js",
       },
       output: {
         entryFileNames: `[name].js`,

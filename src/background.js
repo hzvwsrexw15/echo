@@ -52,5 +52,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse(e);
       });
   }
+  if (message.type === "goto-page") {
+    const { url } = message;
+    chrome.tabs.create({ url: url });
+  }
   return true;
 });
