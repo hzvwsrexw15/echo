@@ -20,7 +20,7 @@ Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5，每天 10 �
 
 #### 扩展程序包
 
-1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=1684647523095">下载</a>，下载扩展程序压缩包
+1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=1684855211495">下载</a>，下载扩展程序压缩包
 
 2、打开 chrome 浏览器，点击”chorme“=>”窗口“=>"扩展程序"
 
