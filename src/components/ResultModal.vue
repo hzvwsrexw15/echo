@@ -9,7 +9,11 @@ import {
   IRefreshRight,
   IUpdate,
   IArrowUp,
+  ICheckOutlined,
+  ISet,
+  IMoreOutlined,
 } from "./icons";
+import Maps from "./icons/map";
 
 const icon = chrome.runtime.getURL("images/echo.png");
 const props = defineProps({
@@ -77,13 +81,13 @@ const genContent = () => {
     }
   );
 };
-const copy = () => {
-  const node = document
-    .querySelector("#echo-content-root")
-    .shadowRoot.querySelector("#myTextarea");
-  node.autofocus = true;
-  node.select();
-  document.execCommand("copy");
+const showCopySuccess = ref(false);
+const handleCopySuccess = () => {
+  showCopySuccess.value = true;
+  message.success("复制成功");
+  setTimeout(() => {
+    showCopySuccess.value = false;
+  }, 3000);
 };
 const handleClose = () => {
   emit("close");
@@ -91,6 +95,12 @@ const handleClose = () => {
 const changeShortCut = (item) => {
   curShortCut.value = item;
   genContent();
+};
+const handleGotoManage = () => {
+  chrome.runtime.sendMessage({
+    type: "goto-page",
+    url: "set.html",
+  });
 };
 onMounted(async () => {
   const { top } = props.selectionRect;
@@ -130,7 +140,7 @@ onMounted(async () => {
               :key="index"
               @click="changeShortCut(item)"
             >
-              <component :is="item.icon" :width="16" :height="16" />
+              <component :is="Maps[item.icon]" :width="16" :height="16" />
               <span class="text-wrapper">
                 <span class="text">{{ item.name }}</span>
               </span>
@@ -139,24 +149,7 @@ onMounted(async () => {
           <div class="echo-popover">
             <span class="trigger-node">
               <div class="more" @click="showMoreOperate = !showMoreOperate">
-                <svg
-                  width="18"
-                  height="18"
-                  fill="none"
-                  viewBox="0 0 22 22"
-                  style="min-width: 18px; min-height: 18px"
-                >
-                  <g>
-                    <path
-                      data-follow-fill="currentColor"
-                      fill-opacity=".65"
-                      fill="currentColor"
-                      d="M9.704 5.88a1.833 1.833 0 1 1 2.592-2.593A1.833 1.833 0 0 1 9.704 5.88Zm0 6.416a1.834 1.834 0 1 1 2.593-2.593 1.834 1.834 0 0 1-2.593 2.593Zm-.537 5.12a1.833 1.833 0 1 0 3.666 0 1.833 1.833 0 0 0-3.666 0Z"
-                      clip-rule="evenodd"
-                      fill-rule="evenodd"
-                    ></path>
-                  </g>
-                </svg>
+                <IMoreOutlined :width="16" :height="16" />
               </div>
             </span>
             <div
@@ -170,32 +163,14 @@ onMounted(async () => {
                   v-for="(item, index) in otherShortCutList"
                   :key="index"
                 >
-                  <component :is="item.icon" :width="16" :height="16" />
+                  <component :is="Maps[item.icon]" :width="16" :height="16" />
                   <span class="more-item-text">{{ item.name }}</span>
                 </div>
-                <div class="more-item manage manage-border">
-                  <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    viewBox="0 0 14 14"
-                    style="min-width: 16px; min-height: 16px"
-                  >
-                    <g>
-                      <path
-                        data-follow-stroke="currentColor"
-                        d="M2.753 11.007A5.833 5.833 0 0 1 1.33 8.399a1.75 1.75 0 0 0 .126-3.24 5.86 5.86 0 0 1 1.59-2.46l.022.013a1.75 1.75 0 0 0 2.622-1.4 5.824 5.824 0 0 1 2.763.037 1.75 1.75 0 0 0 2.701 1.56 5.824 5.824 0 0 1 1.414 2.374 1.75 1.75 0 0 0 .12 2.982 5.831 5.831 0 0 1-1.334 2.608 1.75 1.75 0 0 0-2.744 1.73 5.832 5.832 0 0 1-2.97.071 1.75 1.75 0 0 0-2.887-1.667Z"
-                        stroke="currentColor"
-                        stroke-linejoin="round"
-                      ></path>
-                      <path
-                        data-follow-stroke="currentColor"
-                        d="M7 9.042a2.042 2.042 0 1 0 0-4.084 2.042 2.042 0 0 0 0 4.084Z"
-                        stroke="currentColor"
-                        stroke-linejoin="round"
-                      ></path>
-                    </g>
-                  </svg>
+                <div
+                  class="more-item manage manage-border"
+                  @click="handleGotoManage"
+                >
+                  <ISet :width="16" :height="16"></ISet>
                   管理
                 </div>
               </div>
@@ -249,9 +224,18 @@ onMounted(async () => {
               <Spin :indicator="indicator" v-if="showLoading" />
             </span>
             <div class="operation-group">
-              <!-- <span class="operation-item" @click="copy">
+              <span
+                title="复制内容"
+                class="operation-item"
+                v-if="resultText && !showCopySuccess"
+                v-clipboard:copy="resultText"
+                v-clipboard:success="handleCopySuccess"
+              >
                 <ICopy :width="16" :height="16"></ICopy>
-              </span> -->
+              </span>
+              <span title="已复制！" v-if="showCopySuccess">
+                <ICheckOutlined :width="16" :height="16"></ICheckOutlined>
+              </span>
               <span class="operation-item" @click="genContent">
                 <IRefreshRight
                   class="octicon octicon-sync"

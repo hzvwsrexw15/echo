@@ -23,6 +23,7 @@ import {
   ITagFilled,
   ISet,
   IExit,
+  ICheckOutlined,
 } from "./index";
 
 export default {
@@ -50,4 +51,6 @@ export default {
   tagFilled: ITagFilled,
   set: ISet,
   exit: IExit,
+  checkOutlined: ICheckOutlined,
+  IMoreOutlined: ICheckOutlined,
 };

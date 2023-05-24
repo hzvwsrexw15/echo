@@ -22,6 +22,8 @@ import ISend from "./send.vue";
 import ITagFilled from "./tagFilled.vue";
 import ISet from "./set.vue";
 import IExit from "./exit.vue";
+import ICheckOutlined from "./checkOutlined.vue";
+import IMoreOutlined from "./moreOutlined.vue";
 
 export {
   IArticle,
@@ -48,4 +50,6 @@ export {
   ITagFilled,
   ISet,
   IExit,
+  ICheckOutlined,
+  IMoreOutlined,
 };

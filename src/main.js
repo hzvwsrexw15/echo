@@ -1,6 +1,8 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 
+import { VueClipboard } from "@soerenmartius/vue3-clipboard";
+
 import "./assets/main.css";
 import "ant-design-vue/lib/date-picker/style/index.css";
 import "ant-design-vue/lib/tag/style/index.css";
@@ -17,7 +19,7 @@ async function insertElementToBody(element) {
   div.id = "echo-content-root";
   const shadowOpen = div.attachShadow({ mode: "open" });
   document.body.appendChild(div);
-  createApp(element).mount(shadowOpen);
+  createApp(element).use(VueClipboard).mount(shadowOpen);
   insertStyle(shadowOpen);
 }
 

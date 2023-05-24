@@ -5,7 +5,17 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 import { message, Spin, Modal, Tag } from "ant-design-vue";
 import { LoadingOutlined } from "@ant-design/icons-vue";
-import { IClose, IPlus, IHistory, ISend, IEdit, ISet, IExit } from "./icons";
+import {
+  IClose,
+  IPlus,
+  IHistory,
+  ISend,
+  IEdit,
+  ISet,
+  IExit,
+  ICopy,
+  ICheckOutlined,
+} from "./icons";
 import { fetchShortCutDetail } from "../api/shortCut";
 import {
   queryChatList,
@@ -205,6 +215,14 @@ const initData = async () => {
 const handleClickSuggestion = (item) => {
   textareaContent.value = item;
 };
+const showCopySuccess = ref(false);
+const handleCopySuccess = () => {
+  showCopySuccess.value = true;
+  message.success("复制成功");
+  setTimeout(() => {
+    showCopySuccess.value = false;
+  }, 3000);
+};
 onMounted(async () => {
   await initData();
   scrollToBottom();
@@ -271,6 +289,22 @@ onMounted(async () => {
                     <div class="chat-content markdown-body gpt-markdown">
                       <div class="markdown __markdown light">
                         <p v-html="item.content"></p>
+                        <div class="operate-bar">
+                          <span
+                            title="复制内容"
+                            v-if="item.content && !showCopySuccess"
+                            v-clipboard:copy="item.content"
+                            v-clipboard:success="handleCopySuccess"
+                          >
+                            <ICopy :width="16" :height="16"></ICopy>
+                          </span>
+                          <span title="已复制！" v-if="showCopySuccess">
+                            <ICheckOutlined
+                              :width="16"
+                              :height="16"
+                            ></ICheckOutlined>
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -641,6 +675,24 @@ onMounted(async () => {
 }
 .chat .chat-box .wrapper .chat-container .chat-reply {
   text-align: left;
+}
+.chat .chat-box .wrapper .chat-container .chat-reply .operate-bar {
+  display: none;
+}
+.chat .chat-box .wrapper .chat-container .chat-reply:hover .operate-bar {
+  display: block;
+}
+.operate-bar span {
+  cursor: pointer;
+}
+.operate-bar {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  background: #f6f8fa;
+  padding: 5px;
+  border-radius: 5px;
+  line-height: 1;
 }
 .chat .chat-box .wrapper .chat-container .chat-reply .chat-content {
   border-radius: 8px 8px 8px 0;
