@@ -142,24 +142,31 @@ const handleEnter = async () => {
       prompt = shortCut.prompt || "";
     }
 
-    const response = await queryChatCompletion({
-      prompt,
-      content,
-      shortCutId: curChat.value.short_cut_id,
-      chat_id: curChat.value._id,
-    });
+    chrome.runtime.sendMessage(
+      {
+        type: "get-sse",
+        url: "/echo/openai/chatCompletion",
+        params: {
+          prompt,
+          content,
+          shortCutId: curChat.value.short_cut_id,
+          chat_id: curChat.value._id,
+          stream: true,
+        },
+        from: "chat",
+      },
+      () => {}
+    );
+
     chatContentList.value.push({
       chat_id: curChat.value._id,
-      content: response,
+      content: "",
       gmt_create: Date.now(),
       gmt_update: Date.now(),
       item_type: "reply",
       userid: curChat.value.userid,
       _id: Date.now(),
     });
-    showLoading.value = false;
-    await fetchChatList();
-    await fetchChatContentList();
   } catch (e) {
     message.error(e.message);
     showLoading.value = false;
@@ -198,7 +205,7 @@ const handleNewChat = () => {
 const fetchVersion = async () => {
   try {
     const response = await queryAppVersion({
-      version: "0.0.6",
+      version: "0.0.7",
     });
     shouldUpdateVersion.value = response;
   } catch (e) {
@@ -226,6 +233,21 @@ const handleCopySuccess = () => {
 onMounted(async () => {
   await initData();
   scrollToBottom();
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    const { from, text, finish_reason } = request || {};
+    if (from !== "chat") return;
+    if (text) {
+      chatContentList.value[chatContentList.value.length - 1].content += text;
+    }
+    showLoading.value = false;
+    // if (finish_reason === "stop") {
+    //   fetchChatList().then(() => {
+    //     fetchChatContentList();
+    //   });
+    // }
+    sendResponse(true);
+    return true;
+  });
 });
 </script>
 <template>

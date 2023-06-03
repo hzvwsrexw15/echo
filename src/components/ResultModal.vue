@@ -63,22 +63,17 @@ const genContent = () => {
   resultText.value = "";
   chrome.runtime.sendMessage(
     {
-      type: "post-data",
+      type: "get-sse",
       url: "/echo/openai/chatCompletion",
       params: {
         prompt,
         content: input,
         shortCutId: _id,
+        stream: true,
       },
+      from: "shortCut",
     },
-    (response) => {
-      showLoading.value = false;
-      if (!response.status) {
-        resultText.value = response.data;
-      } else {
-        message.error(response.message);
-      }
-    }
+    () => {}
   );
 };
 const showCopySuccess = ref(false);
@@ -109,6 +104,18 @@ onMounted(async () => {
     top: `${getScrollTop() + top + 30}px`,
   };
   await genContent();
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    const { from, text, finish_reason } = request || {};
+    if (from !== "shortCut") return;
+    if (text) {
+      resultText.value += text;
+    }
+    if (finish_reason === "stop") {
+      showLoading.value = false;
+    }
+    sendResponse(true);
+    return true;
+  });
 });
 </script>
 <template>

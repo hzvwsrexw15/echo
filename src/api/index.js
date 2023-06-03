@@ -1,4 +1,4 @@
-const BASE_URL = "https://api.yunzhu.info";
+export const BASE_URL = "https://api.yunzhu.info";
 
 export function post(url, params) {
   return fetch(`${BASE_URL}${url}`, {
