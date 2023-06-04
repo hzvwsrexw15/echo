@@ -1,6 +1,6 @@
 {
   "name": "echo",
-  "version": "0.0.6",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
     "@soerenmartius/vue3-clipboard": "^0.1.2",
     "ant-design-vue": "^3.2.20",
     "dayjs": "^1.11.7",
+    "showdown": "^2.1.0",
     "vue": "^3.2.47"
   },
   "devDependencies": {

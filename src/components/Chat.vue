@@ -1,6 +1,7 @@
 <script setup>
 import { ref, defineEmits, onMounted, h, nextTick } from "vue";
 import dayjs from "dayjs";
+import showdown from "showdown";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 import { message, Spin, Modal, Tag } from "ant-design-vue";
@@ -17,11 +18,7 @@ import {
   ICheckOutlined,
 } from "./icons";
 import { fetchShortCutDetail } from "../api/shortCut";
-import {
-  queryChatList,
-  queryChatContentList,
-  queryChatCompletion,
-} from "../api/openAI";
+import { queryChatList, queryChatContentList } from "../api/openAI";
 import { queryAppVersion } from "../api/user";
 
 const indicator = h(LoadingOutlined, {
@@ -45,10 +42,11 @@ const onlineChatContentList = ref([]);
 const textareaContent = ref("");
 const showLoading = ref(false);
 const shouldUpdateVersion = ref(false);
+const generating = ref(false);
 const suggestions = ref([
-  "联网查询今日国外新闻热点",
+  "写一首七言古诗",
   "今日北京市朝阳区天气情况？",
-  "当前国内有哪些热点新闻？",
+  "如何在 Javascript 中发出 HTTP 请求？",
 ]);
 const scrollToBottom = () => {
   nextTick(() => {
@@ -120,6 +118,9 @@ const handleEnter = async () => {
   if (!content) {
     return message.error("请输入内容");
   }
+  if (generating.value) {
+    return message.error("会话中,请稍后再试!");
+  }
   chatContentList.value.push({
     chat_id: curChat.value._id,
     content,
@@ -141,7 +142,7 @@ const handleEnter = async () => {
       });
       prompt = shortCut.prompt || "";
     }
-
+    generating.value = true;
     chrome.runtime.sendMessage(
       {
         type: "get-sse",
@@ -205,7 +206,7 @@ const handleNewChat = () => {
 const fetchVersion = async () => {
   try {
     const response = await queryAppVersion({
-      version: "0.0.7",
+      version: "0.1.1",
     });
     shouldUpdateVersion.value = response;
   } catch (e) {
@@ -230,6 +231,10 @@ const handleCopySuccess = () => {
     showCopySuccess.value = false;
   }, 3000);
 };
+const getHtml = (content) => {
+  const converter = new showdown.Converter();
+  return converter.makeHtml(content);
+};
 onMounted(async () => {
   await initData();
   scrollToBottom();
@@ -240,11 +245,9 @@ onMounted(async () => {
       chatContentList.value[chatContentList.value.length - 1].content += text;
     }
     showLoading.value = false;
-    // if (finish_reason === "stop") {
-    //   fetchChatList().then(() => {
-    //     fetchChatContentList();
-    //   });
-    // }
+    if (finish_reason === "stop") {
+      generating.value = false;
+    }
     sendResponse(true);
     return true;
   });
@@ -301,16 +304,19 @@ onMounted(async () => {
                   v-if="item.item_type === 'intent'"
                 >
                   <div class="feedback message-content-wrap">
-                    <div class="chat-content">
-                      <p v-html="item.content"></p>
+                    <div class="chat-content markdown-body">
+                      <p class="highlight" v-html="item.content"></p>
                     </div>
                   </div>
                 </div>
-                <div class="chat-item chat-reply" v-else>
+                <div
+                  class="chat-item chat-reply"
+                  v-if="item.item_type === 'reply' && item.content"
+                >
                   <div class="feedback message-content-wrap">
                     <div class="chat-content markdown-body gpt-markdown">
-                      <div class="markdown __markdown light">
-                        <p v-html="item.content"></p>
+                      <div class="markdown __markdown light markdown-body">
+                        <p class="highlight" v-html="getHtml(item.content)"></p>
                         <div class="operate-bar">
                           <span
                             title="复制内容"
@@ -445,14 +451,17 @@ onMounted(async () => {
                   @click="handleChangeChat(item)"
                 >
                   <div class="conv-item-header">
-                    <span class="title"
-                      ><span class="title-text"
-                        ><Tag v-if="item.short_cut_id" color="processing"
-                          >快捷操作</Tag
-                        ><span class="">{{ item.title }}</span></span
-                      ><span class="edit">
-                        <IEdit width="16" height="16"></IEdit> </span></span
-                    ><span class="date">{{
+                    <span class="title">
+                      <span class="title-text">
+                        <Tag v-if="item.short_cut_id" color="success">快捷</Tag>
+                        <Tag v-else color="processing">会话</Tag>
+                        <span class="">{{ item.title }}</span>
+                      </span>
+                      <span class="edit">
+                        <IEdit width="16" height="16"></IEdit>
+                      </span>
+                    </span>
+                    <span class="date">{{
                       dayjs(item.gmt_update).toNow()
                     }}</span>
                   </div>

@@ -4,6 +4,7 @@ import App from "./App.vue";
 import { VueClipboard } from "@soerenmartius/vue3-clipboard";
 
 import "./assets/main.css";
+import "./assets/markdown.css";
 import "ant-design-vue/lib/date-picker/style/index.css";
 import "ant-design-vue/lib/tag/style/index.css";
 import "ant-design-vue/lib/button/style/index.css";

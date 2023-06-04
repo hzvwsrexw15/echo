@@ -36,25 +36,6 @@ export function queryChatContentList(params) {
   });
 }
 
-export function queryChatCompletion(params) {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      {
-        type: "post-data",
-        url: "/echo/openai/chatCompletion",
-        params,
-      },
-      (response) => {
-        if (!response.status) {
-          resolve(response.data);
-        } else {
-          reject(response);
-        }
-      }
-    );
-  });
-}
-
 export function queryTextChatCompletion(params) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
