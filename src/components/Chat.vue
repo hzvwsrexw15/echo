@@ -206,7 +206,7 @@ const handleNewChat = () => {
 const fetchVersion = async () => {
   try {
     const response = await queryAppVersion({
-      version: "0.1.1",
+      version: "0.1.2",
     });
     shouldUpdateVersion.value = response;
   } catch (e) {

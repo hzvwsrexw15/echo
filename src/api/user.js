@@ -52,6 +52,25 @@ export function fetchRegister(params) {
   });
 }
 
+export function fetchUpdateUser(params) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      {
+        type: "post-data",
+        url: "/user/update",
+        params,
+      },
+      (response) => {
+        if (response && !response.status) {
+          resolve(response.data);
+        } else {
+          reject(response);
+        }
+      }
+    );
+  });
+}
+
 export function fetchSendSms(params) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(

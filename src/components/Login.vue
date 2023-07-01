@@ -3,7 +3,12 @@ import { ref, reactive, defineEmits } from "vue";
 import { Input, Button, message } from "ant-design-vue";
 import { UserOutlined, LockOutlined } from "@ant-design/icons-vue";
 import { IClose, IGithub } from "./icons";
-import { fetchLogin, fetchRegister, fetchSendSms } from "../api/user";
+import {
+  fetchLogin,
+  fetchRegister,
+  fetchUpdateUser,
+  fetchSendSms,
+} from "../api/user";
 
 const emit = defineEmits();
 const icon = chrome.runtime.getURL("images/echo.png");
@@ -12,6 +17,12 @@ const formState = reactive({
   password: "",
 });
 const registerFormState = reactive({
+  username: "",
+  password: "",
+  confirmPassword: "",
+  code: "",
+});
+const updateFormState = reactive({
   username: "",
   password: "",
   confirmPassword: "",
@@ -42,10 +53,14 @@ const handlelogin = () => {
   fetchLogin({
     username: formState.username,
     password: formState.password,
-  }).then((res) => {
-    message.info("登录成功！");
-    emit("success");
-  });
+  })
+    .then((res) => {
+      message.info("登录成功！");
+      emit("success");
+    })
+    .catch((e) => {
+      message.error(e.message);
+    });
 };
 const handleRegister = () => {
   if (!registerFormState.username) {
@@ -83,14 +98,52 @@ const handleRegister = () => {
       message.error(e.message);
     });
 };
-const handleGetVerifyCode = () => {
-  if (!registerFormState.username) {
+const handleUpdatePwd = () => {
+  if (!updateFormState.username) {
     message.error("请输入手机号");
     return;
   }
   // 校验手机号
   const phoneReg = /^1[3456789]\d{9}$/;
-  if (!phoneReg.test(registerFormState.username)) {
+  if (!phoneReg.test(updateFormState.username)) {
+    message.error("请输入正确的手机号");
+    return;
+  }
+  if (!updateFormState.code) {
+    message.error("请输入验证码");
+    return;
+  }
+  if (!updateFormState.password) {
+    message.error("请输入密码");
+    return;
+  }
+  if (updateFormState.confirmPassword !== updateFormState.password) {
+    message.error("两次密码不一致");
+    return;
+  }
+  fetchUpdateUser({
+    username: updateFormState.username,
+    password: updateFormState.password,
+    code: updateFormState.code,
+  })
+    .then((res) => {
+      message.info("密码修改成功！");
+      emit("success");
+    })
+    .catch((e) => {
+      message.error(e.message);
+    });
+};
+const handleGetVerifyCode = (type) => {
+  const username =
+    type === "register" ? registerFormState.username : updateFormState.username;
+  if (!username) {
+    message.error("请输入手机号");
+    return;
+  }
+  // 校验手机号
+  const phoneReg = /^1[3456789]\d{9}$/;
+  if (!phoneReg.test(username)) {
     message.error("请输入正确的手机号");
     return;
   }
@@ -107,10 +160,14 @@ const handleGetVerifyCode = () => {
     }
   }, 1000);
   fetchSendSms({
-    phone: registerFormState.username,
-  }).then(() => {
-    message.info("验证码已发送");
-  });
+    phone: username,
+  })
+    .then(() => {
+      message.info("验证码已发送");
+    })
+    .catch((e) => {
+      message.error(e.message);
+    });
 };
 </script>
 <template>
@@ -167,12 +224,15 @@ const handleGetVerifyCode = () => {
         <div class="login-btn" @click="handlelogin">
           <span>使用账号登录</span>
         </div>
-        <div>
+        <div style="margin-bottom: 10px">
           <Button type="link" @click="cur_tab = 'register'">注册</Button>
+        </div>
+        <div>
+          <Button type="link" @click="cur_tab = 'forget'">忘记密码</Button>
         </div>
       </div>
     </div>
-    <div class="login" v-else>
+    <div class="login" v-else-if="register">
       <div class="container">
         <div class="form-item">
           <Input
@@ -198,7 +258,7 @@ const handleGetVerifyCode = () => {
               <Button
                 type="link"
                 :disabled="registerDisabledCode"
-                @click="handleGetVerifyCode"
+                @click="handleGetVerifyCode('register')"
                 >{{ registercCodetText }}</Button
               >
             </div>
@@ -231,6 +291,71 @@ const handleGetVerifyCode = () => {
 
         <div class="login-btn" @click="handleRegister">
           <span>注册账号</span>
+        </div>
+        <div>
+          <Button type="link" @click="cur_tab = 'login'">登录</Button>
+        </div>
+      </div>
+    </div>
+    <div class="login" v-else>
+      <div class="container">
+        <div class="form-item">
+          <Input
+            v-model:value="updateFormState.username"
+            placeholder="手机号"
+            size="large"
+          >
+            <template #prefix
+              ><UserOutlined style="color: rgba(0, 0, 0, 0.25)"
+            /></template>
+          </Input>
+        </div>
+        <div class="form-item">
+          <div class="flex">
+            <Input
+              v-model:value="updateFormState.code"
+              placeholder="验证码"
+              class="code-inp"
+              size="large"
+            >
+            </Input>
+            <div style="width: 105px">
+              <Button
+                type="link"
+                :disabled="registerDisabledCode"
+                @click="handleGetVerifyCode('forget')"
+                >{{ registercCodetText }}</Button
+              >
+            </div>
+          </div>
+        </div>
+        <div class="form-item">
+          <Input
+            v-model:value="updateFormState.password"
+            type="password"
+            placeholder="密码"
+            size="large"
+          >
+            <template #prefix
+              ><LockOutlined style="color: rgba(0, 0, 0, 0.25)"
+            /></template>
+          </Input>
+        </div>
+        <div class="form-item">
+          <Input
+            v-model:value="updateFormState.confirmPassword"
+            type="password"
+            placeholder="确认密码"
+            size="large"
+          >
+            <template #prefix
+              ><LockOutlined style="color: rgba(0, 0, 0, 0.25)"
+            /></template>
+          </Input>
+        </div>
+
+        <div class="login-btn" @click="handleUpdatePwd">
+          <span>修改密码</span>
         </div>
         <div>
           <Button type="link" @click="cur_tab = 'login'">登录</Button>
@@ -392,6 +517,6 @@ const handleGetVerifyCode = () => {
   margin-right: 5px;
 }
 .code-inp {
-  width: 120px;
+  width: 110px;
 }
 </style>
