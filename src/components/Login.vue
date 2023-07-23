@@ -232,7 +232,7 @@ const handleGetVerifyCode = (type) => {
         </div>
       </div>
     </div>
-    <div class="login" v-else-if="register">
+    <div class="login" v-else-if="cur_tab === 'register'">
       <div class="container">
         <div class="form-item">
           <Input
