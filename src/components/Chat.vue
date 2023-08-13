@@ -16,9 +16,14 @@ import {
   IExit,
   ICopy,
   ICheckOutlined,
+  IArrowDown,
 } from "./icons";
 import { fetchShortCutDetail } from "../api/shortCut";
-import { queryChatList, queryChatContentList } from "../api/openAI";
+import {
+  queryChatList,
+  queryChatContentList,
+  queryModelList,
+} from "../api/openAI";
 import { queryAppVersion } from "../api/user";
 
 const indicator = h(LoadingOutlined, {
@@ -45,9 +50,15 @@ const shouldUpdateVersion = ref(false);
 const generating = ref(false);
 const suggestions = ref([
   "写一首七言古诗",
-  "今日北京市朝阳区天气情况？",
   "如何在 Javascript 中发出 HTTP 请求？",
 ]);
+const modelList = ref([
+  { value: "Option1", label: "Option1" },
+  { value: "Option2", label: "Option2" },
+]);
+const model = ref(null);
+const showSelectModel = ref(false);
+
 const scrollToBottom = () => {
   nextTick(() => {
     document
@@ -213,12 +224,27 @@ const fetchVersion = async () => {
     shouldUpdateVersion.value = false;
   }
 };
+const fetchModelList = async () => {
+  try {
+    const response = await queryModelList();
+    if (response && response.length) {
+      modelList.value = (response || []).map((item) => ({
+        label: item.name,
+        value: item._id,
+        _id: item._id,
+      }));
+    }
+  } catch (e) {
+    modelList.value = [];
+  }
+};
 const initData = async () => {
   await fetchChatList();
   await fetchChatContentList();
   await fetchOnlineChatList();
   await fetchOnlineChatContentList();
   await fetchVersion();
+  await fetchModelList();
 };
 const handleClickSuggestion = (item) => {
   textareaContent.value = item;
@@ -234,6 +260,11 @@ const handleCopySuccess = () => {
 const getHtml = (content) => {
   const converter = new showdown.Converter();
   return converter.makeHtml(content);
+};
+const handleChangeModel = (item) => {
+  console.log(item);
+  model.value = { ...item };
+  showSelectModel.value = false;
 };
 onMounted(async () => {
   await initData();
@@ -381,6 +412,29 @@ onMounted(async () => {
                 >
                   <IHistory width="15" height="15"></IHistory>
                   <span>会话记录</span>
+                </div>
+                <div
+                  v-if="modelList.length"
+                  class="btn echo-btn toolbar-btn outline primary-outline-button small-button model-container"
+                  style="font-weight: normal"
+                  @click="showSelectModel = !showSelectModel"
+                >
+                  <div class="flex">
+                    <span class="model-name">{{
+                      model ? model.label : ""
+                    }}</span>
+                    <IArrowDown :width="8" />
+                  </div>
+                  <div class="model-list" v-if="showSelectModel">
+                    <div
+                      class="model-item"
+                      v-for="item in modelList"
+                      :key="item.value"
+                      @click.stop="handleChangeModel(item)"
+                    >
+                      {{ item.label }}
+                    </div>
+                  </div>
                 </div>
                 <div
                   v-if="shouldUpdateVersion"
@@ -1081,5 +1135,51 @@ onMounted(async () => {
   font-size: 13px;
   line-height: 16px;
   color: #225ebe;
+}
+.model-container {
+  position: relative;
+}
+.model-list {
+  position: absolute;
+  min-width: 165px;
+  max-width: 220px;
+  max-height: 250px;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  background: #fff;
+  box-shadow: 0 8px 16px #919eab29;
+  border-radius: 5px;
+  z-index: 900;
+  border: 1px solid #e5e8eb;
+  bottom: 30px;
+  left: 0;
+}
+.model-item {
+  cursor: pointer;
+  font-size: 13px;
+  width: 100%;
+  height: 32px;
+  line-height: 32px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  background: #fff;
+  color: #333;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.model-item:hover {
+  background-color: #3366ff14;
+}
+.model-name {
+  flex: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 80px;
+}
+.flex {
+  display: flex;
+  align-items: center;
 }
 </style>

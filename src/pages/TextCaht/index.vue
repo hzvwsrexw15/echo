@@ -1,7 +1,6 @@
 <script setup>
-import { ref, reactive, onMounted, h, defineProps, nextTick } from "vue";
+import { ref, onMounted, h, defineProps, nextTick } from "vue";
 import { message, Input, Spin } from "ant-design-vue";
-import { queryTextChatCompletion } from "../../api/openAI";
 import { LoadingOutlined } from "@ant-design/icons-vue";
 
 const indicator = h(LoadingOutlined, {

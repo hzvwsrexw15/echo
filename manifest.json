@@ -21,7 +21,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["images/echo.png", "images/echo1.png", "scripts/style.css"],
+      "resources": ["images/echo.png", "scripts/style.css"],
       "matches": ["<all_urls>"]
     }
   ],

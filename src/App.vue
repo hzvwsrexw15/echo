@@ -4,7 +4,7 @@ import SideBar from "./components/Sidebar.vue";
 import ShortCut from "./components/ShortCut.vue";
 import ResultModal from "./components/ResultModal.vue";
 import Login from "./components/Login.vue";
-import Chat from "./components/Chat.vue";
+import Chat from "./components/Chat/index.vue";
 import AddShortCut from "./components/AddShortCut.vue";
 import AddApiKey from "./components/AddApiKey.vue";
 import { message } from "ant-design-vue";

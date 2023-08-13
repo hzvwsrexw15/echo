@@ -2,6 +2,7 @@
 import { ref, onMounted, defineEmits, defineProps } from "vue";
 import ShortCutItem from "./ShortCutItem.vue";
 import Maps from "./icons/map";
+import { fetchShortCutDetail } from "../api/shortCut";
 
 const props = defineProps({
   shortCutList: Array,
