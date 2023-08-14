@@ -94,6 +94,10 @@ Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5 API，免费�
 ![document](./images/WX20230604-184604%402x.png)
 ![document](./images/WX20230604-184645@2x.png)
 
+#### 知识库
+
+https://help-doc.oss-cn-beijing.aliyuncs.com/knowledge.mov
+
 ### 反馈建议
 
 1. 提 <a href="https://github.com/hzvwsrexw15/echo/issues">Issues</a>
