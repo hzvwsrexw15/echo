@@ -96,7 +96,7 @@ Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5 API，免费�
 
 #### 知识库
 
-https://help-doc.oss-cn-beijing.aliyuncs.com/knowledge.mov
+<video src="https://help-doc.oss-cn-beijing.aliyuncs.com/knowledge.mov" controls></video>
 
 ### 反馈建议
 
