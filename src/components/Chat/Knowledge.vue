@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 import { message } from "ant-design-vue";
+import showdown from "showdown";
 import { IArrowDown } from "../icons";
 import {
   queryChatList,
@@ -22,6 +23,12 @@ const generating = ref(false);
 const modelList = ref([]);
 const model = ref(null);
 const showSelectModel = ref(false);
+
+const converter = new showdown.Converter();
+
+const getHtml = (content) => {
+  return converter.makeHtml(content);
+};
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -49,7 +56,12 @@ const fetchChatContentList = async () => {
     const response = await queryChatContentList({
       chat_id: curChat.value._id,
     });
-    chatContentList.value = response || [];
+    chatContentList.value = (response || []).map((item) => {
+      return {
+        ...item,
+        content: getHtml(item.content),
+      };
+    });
     chatContentList.value.push({
       chat_id: curChat.value._id,
       content: "👋 你好，有什么可以帮助你？",

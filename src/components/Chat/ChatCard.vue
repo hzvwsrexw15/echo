@@ -1,9 +1,9 @@
 <script setup>
 import { ref, defineProps, h, defineEmits } from "vue";
 import { message, Spin } from "ant-design-vue";
-import showdown from "showdown";
 import { ICopy, ICheckOutlined } from "../icons";
 import { LoadingOutlined } from "@ant-design/icons-vue";
+
 const props = defineProps({
   list: {
     type: Array,
@@ -43,17 +43,13 @@ const handleCopySuccess = () => {
   }, 3000);
 };
 
-const getHtml = (content) => {
-  const converter = new showdown.Converter();
-  return converter.makeHtml(content);
-};
-
 const handleClickSuggestion = (item) => {
   emit("suggest", item);
 };
 </script>
 <template>
   <div class="chat-container" style="padding-bottom: 60px">
+    <slot name="more"></slot>
     <template v-for="item in list" :key="item._id">
       <div class="chat-item chat-question" v-if="item.item_type === 'intent'">
         <div class="feedback message-content-wrap">
@@ -69,7 +65,7 @@ const handleClickSuggestion = (item) => {
         <div class="feedback message-content-wrap">
           <div class="chat-content markdown-body gpt-markdown">
             <div class="markdown __markdown light markdown-body">
-              <p class="highlight" v-html="getHtml(item.content)"></p>
+              <p class="highlight" v-html="item.content"></p>
               <div class="operate-bar">
                 <span
                   title="复制内容"

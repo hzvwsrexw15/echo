@@ -22,7 +22,7 @@ export function queryChatContentList(params) {
     chrome.runtime.sendMessage(
       {
         type: "post-data",
-        url: "/echo/openai/chatContentList",
+        url: "/echo/openai/chatContentListByPage",
         params,
       },
       (response) => {

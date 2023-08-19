@@ -2,10 +2,12 @@
 import { ref, onMounted, nextTick } from "vue";
 import ChatCard from "./ChatCard.vue";
 import ChatInput from "./ChatInput.vue";
+import More from "./More.vue";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 import { message, Tag } from "ant-design-vue";
+import showdown from "showdown";
 import { IClose, IPlus, IHistory, IEdit, IArrowDown } from "../icons";
 import { queryChatList, queryChatContentList } from "../../api/openAI";
 import { queryAppVersion } from "../../api/user";
@@ -16,10 +18,22 @@ const onlineChatList = ref([]);
 const curChat = ref(null);
 const curOnlineChat = ref(null);
 const chatContentList = ref([]);
+const chatContentTotal = ref(0);
+const chatContentParam = ref({
+  page: 0,
+  size: 20,
+});
+const chatContentLoading = ref(false);
 const textareaContent = ref("");
 const showLoading = ref(false);
 const shouldUpdateVersion = ref(false);
 const generating = ref(false);
+
+const converter = new showdown.Converter();
+
+const getHtml = (content) => {
+  return converter.makeHtml(content);
+};
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -34,6 +48,8 @@ const fetchChatList = async () => {
     historys.value = response;
     if (response && response.length) {
       curChat.value = response[0];
+      chatContentParam.value.page = 0;
+      chatContentList.value = [];
     }
   } catch (e) {
     message.error(e.message);
@@ -52,15 +68,35 @@ const fetchOnlineChatList = async () => {
 };
 const fetchChatContentList = async () => {
   if (!curChat.value) return;
+  if (chatContentLoading.value) return;
   try {
+    chatContentLoading.value = true;
     const response = await queryChatContentList({
       chat_id: curChat.value._id,
+      page: chatContentParam.value.page,
+      size: chatContentParam.value.size,
     });
-    chatContentList.value = response || [];
-    chatContentList.value.reverse();
+    chatContentList.value = chatContentList.value.reverse().concat(
+      (response.items || []).map((item) => {
+        return {
+          ...item,
+          content: getHtml(item.content),
+        };
+      })
+    );
+    chatContentTotal.value = response.total || 0;
+    chatContentList.value = chatContentList.value.reverse();
+    chatContentLoading.value = false;
   } catch (e) {
     message.error(e.message);
+    chatContentLoading.value = false;
   }
+};
+
+const handleMore = async () => {
+  if (chatContentLoading.value) return;
+  chatContentParam.value.page += 1;
+  await fetchChatContentList();
 };
 
 const showHistoryDrawer = () => {
@@ -69,6 +105,8 @@ const showHistoryDrawer = () => {
 const handleChangeChat = async (item) => {
   curChat.value = item;
   historyVisible.value = false;
+  chatContentParam.value.page = 0;
+  chatContentList.value = [];
   await fetchChatContentList();
   scrollToBottom();
 };
@@ -198,7 +236,17 @@ onMounted(async () => {
               :list="chatContentList"
               :showLoading="showLoading"
               @suggest="handleClickSuggestion"
-            ></ChatCard>
+            >
+              <template v-slot:more>
+                <More
+                  v-if="
+                    chatContentTotal >
+                    (chatContentParam.page + 1) * chatContentParam.size
+                  "
+                  @click="handleMore"
+                ></More>
+              </template>
+            </ChatCard>
           </div>
           <div class="input-panel">
             <div class="toolbar">
