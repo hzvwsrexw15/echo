@@ -2,7 +2,7 @@
 
 ### 介绍
 
-Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5 API，免费使用（如需使用GPT-4，可扫下方二维码加微信沟通），目前有以下功能：
+Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5 API，免费使用（如需使用 GPT-4，可扫下方二维码加微信沟通），目前有以下功能：
 
 - 一键处理选中文本：支持在页面中选择文本，并对文本进行快捷处理，如翻译、摘要、解释等
 
@@ -24,7 +24,7 @@ Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5 API，免费�
 
 #### 扩展程序包
 
-1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=1691934757419">下载</a>，下载扩展程序压缩包
+1、点击<a target="_blank" href="https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=1692432621539">下载</a>，下载扩展程序压缩包
 
 2、打开 chrome 浏览器，点击”chorme“=>”窗口“=>"扩展程序"(或<a target="_blank" href="chrome://extensions/">点击链接</a>打开 chrome extension 配置)
 
