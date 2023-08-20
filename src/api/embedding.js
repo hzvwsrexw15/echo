@@ -53,3 +53,21 @@ export function queryChatContentList(params) {
     );
   });
 }
+
+export function queryCollectModelList() {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      {
+        type: "post-data",
+        url: "/echo/embedding/collectModelList",
+      },
+      (response) => {
+        if (!response.status) {
+          resolve(response.data);
+        } else {
+          reject(response);
+        }
+      }
+    );
+  });
+}

@@ -12,6 +12,7 @@ import {
   queryChatList,
   queryChatContentList,
   queryModelList,
+  queryCollectModelList,
 } from "../../api/embedding";
 
 const curChat = ref(null);
@@ -130,7 +131,25 @@ const handleEnter = async () => {
     showLoading.value = false;
   }
 };
-
+const fetchCollectModelList = async () => {
+  try {
+    const response = await queryCollectModelList();
+    if (response && response.length) {
+      modelList.value = modelList.value.concat(
+        (response || []).map((item) => ({
+          label: item.name,
+          value: item._id,
+          _id: item._id,
+        }))
+      );
+      if (!model.value) {
+        model.value = modelList.value[0];
+      }
+    }
+  } catch (e) {
+    modelList.value = [];
+  }
+};
 const fetchModelList = async () => {
   try {
     const response = await queryModelList();
@@ -145,6 +164,7 @@ const fetchModelList = async () => {
   } catch (e) {
     modelList.value = [];
   }
+  fetchCollectModelList();
 };
 const initData = async () => {
   await fetchModelList();

@@ -187,6 +187,8 @@ const handleNewChat = () => {
     _id: null,
   };
   chatContentList.value = [];
+  chatContentTotal.value = 0;
+  chatContentParam.value.page = 0;
 };
 const fetchVersion = async () => {
   try {
@@ -219,7 +221,15 @@ onMounted(async () => {
     }
     showLoading.value = false;
     if (finish_reason === "stop") {
-      generating.value = false;
+      if (!curChat.value?._id) {
+        setTimeout(async () => {
+          await fetchChatList();
+          await fetchChatContentList();
+          generating.value = false;
+        }, 1000);
+      } else {
+        generating.value = false;
+      }
     }
     sendResponse(true);
     return true;
