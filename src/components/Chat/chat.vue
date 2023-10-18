@@ -11,6 +11,7 @@ import showdown from "showdown";
 import { IClose, IPlus, IHistory, IEdit, IArrowDown } from "../icons";
 import { queryChatList, queryChatContentList } from "../../api/openAI";
 import { queryAppVersion } from "../../api/user";
+import { fetchShortCutDetail } from "../../api/shortCut";
 
 const historyVisible = ref(false);
 const historys = ref([]);
