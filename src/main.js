@@ -12,6 +12,9 @@ import "ant-design-vue/lib/input/style/index.css";
 import "ant-design-vue/lib/message/style/index.css";
 import "ant-design-vue/lib/modal/style/index.css";
 import "ant-design-vue/lib/tag/style/index.css";
+import "ant-design-vue/lib/select/style/index.css";
+import "ant-design-vue/lib/style/default.css";
+import "ant-design-vue/lib/empty/style/index.css";
 
 insertElementToBody(App);
 

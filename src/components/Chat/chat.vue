@@ -6,12 +6,17 @@ import More from "./More.vue";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
-import { message, Tag } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import Select from "ant-design-vue/lib/select/index";
 import showdown from "showdown";
 import { IClose, IPlus, IHistory, IEdit, IArrowDown } from "../icons";
-import { queryChatList, queryChatContentList } from "../../api/openAI";
-import { queryAppVersion } from "../../api/user";
-import { fetchShortCutDetail } from "../../api/shortCut";
+import {
+  queryChatList,
+  queryChatContentList,
+  createChat,
+  queryPlugins,
+  updateChatAiPlugin,
+} from "../../api/openAI";
 
 const historyVisible = ref(false);
 const historys = ref([]);
@@ -27,8 +32,9 @@ const chatContentParam = ref({
 const chatContentLoading = ref(false);
 const textareaContent = ref("");
 const showLoading = ref(false);
-const shouldUpdateVersion = ref(false);
 const generating = ref(false);
+const plugins = ref([]);
+const usePlugin = ref([]);
 
 const converter = new showdown.Converter();
 
@@ -43,12 +49,21 @@ const scrollToBottom = () => {
       .shadowRoot.querySelector(".chat-container").scrollTop = 999999;
   });
 };
+const fetchPluginList = async () => {
+  try {
+    const response = await queryPlugins();
+    plugins.value = response;
+  } catch (e) {
+    plugins.value = [];
+  }
+};
 const fetchChatList = async () => {
   try {
     const response = await queryChatList();
-    historys.value = response;
+    historys.value = response.filter((item) => !item.short_cut_id);
     if (response && response.length) {
       curChat.value = response[0];
+      usePlugin.value = curChat.value.plugins || [];
       chatContentParam.value.page = 0;
       chatContentList.value = [];
     }
@@ -149,12 +164,13 @@ const handleEnter = async () => {
     chrome.runtime.sendMessage(
       {
         type: "get-sse",
-        url: "/echo/openai/chatCompletion",
+        url: "/echo/openai/chatNewCompletion",
         params: {
           prompt,
           content,
           shortCutId: curChat.value.short_cut_id,
           chat_id: curChat.value._id,
+          chat_title: curChat.value.title,
           stream: true,
         },
         from: "chat",
@@ -177,38 +193,32 @@ const handleEnter = async () => {
   }
 };
 
-const handleNewChat = () => {
-  curChat.value = {
-    gmt_create: Date.now(),
-    gmt_update: Date.now(),
-    last_message: "",
-    short_cut_id: "",
-    title: "新会话",
-    userid: "",
-    _id: null,
-  };
-  chatContentList.value = [];
-  chatContentTotal.value = 0;
-  chatContentParam.value.page = 0;
-};
-const fetchVersion = async () => {
-  try {
-    const response = await queryAppVersion({
-      version: "1.0.3",
-    });
-    shouldUpdateVersion.value = response;
-  } catch (e) {
-    shouldUpdateVersion.value = false;
-  }
+const handleNewChat = async () => {
+  await createChat();
+  await fetchChatList();
+  await fetchChatContentList();
 };
 const initData = async () => {
   await fetchChatList();
   await fetchChatContentList();
   await fetchOnlineChatList();
-  await fetchVersion();
+  await fetchPluginList();
 };
 const handleClickSuggestion = (item) => {
   textareaContent.value = item;
+};
+const getPopupContainer = () => {
+  return document
+    .querySelector("#echo-content-root")
+    .shadowRoot.querySelector(".plugin-container");
+};
+
+const handleSelectPlugin = async (value, option) => {
+  const result = await updateChatAiPlugin({
+    id: curChat.value._id,
+    plugins: value,
+  });
+  return result;
 };
 
 onMounted(async () => {
@@ -278,14 +288,28 @@ onMounted(async () => {
                   <span>会话记录</span>
                 </div>
                 <div
-                  v-if="shouldUpdateVersion"
-                  style="font-size: 12px; color: #999; margin-left: 10px"
+                  class="btn echo-btn toolbar-btn outline primary-outline-button small-button plugin-container"
+                  style="font-weight: normal"
                 >
-                  有版本更新，<a
-                    target="_blank"
-                    :href="`https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=${Date.now()}`"
-                    >点击下载</a
+                  <Select
+                    v-model:value="usePlugin"
+                    :options="
+                      plugins.map((item) => ({
+                        value: item.name,
+                        label: item.displayName,
+                      }))
+                    "
+                    mode="multiple"
+                    size="small"
+                    placeholder="请选择插件"
+                    style="width: 150px"
+                    :bordered="false"
+                    :filterOption="false"
+                    :maxTagCount="1"
+                    :getPopupContainer="getPopupContainer"
+                    @change="handleSelectPlugin"
                   >
+                  </Select>
                 </div>
               </div>
             </div>
@@ -327,9 +351,7 @@ onMounted(async () => {
                   <div class="conv-item-header">
                     <span class="title">
                       <span class="title-text">
-                        <Tag v-if="item.short_cut_id" color="success">快捷</Tag>
-                        <Tag v-else color="processing">会话</Tag>
-                        <span class="">{{ item.title }}</span>
+                        <span class="">{{ item.title || "新会话" }}</span>
                       </span>
                       <span class="edit">
                         <IEdit width="16" height="16"></IEdit>
@@ -697,5 +719,8 @@ onMounted(async () => {
 .flex {
   display: flex;
   align-items: center;
+}
+:deep(.ant-select-selection-overflow) {
+  font-size: 12px;
 }
 </style>

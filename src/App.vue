@@ -10,7 +10,7 @@ import AddApiKey from "./components/AddApiKey.vue";
 import { message } from "ant-design-vue";
 import { fetchShortCutList, fetchUpdateShortCut } from "./api/shortCut";
 import { fetchUserInfo } from "./api/user";
-import TextChat from "./pages/TextCaht/index.vue";
+import TextChat from "./pages/TextChat/index.vue";
 
 const globalState = reactive({
   selectionText: "", // 选中文本

@@ -1,10 +1,11 @@
 <script setup>
-import { ref, defineEmits } from "vue";
+import { ref, defineEmits, onMounted } from "vue";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 import { Modal } from "ant-design-vue";
 import { IClose, ISet, IExit } from "../icons";
+import { queryAppVersion } from "../../api/user";
 
 import Chat from "./chat.vue";
 import Knowledge from "./Knowledge.vue";
@@ -12,6 +13,7 @@ import Knowledge from "./Knowledge.vue";
 const emit = defineEmits();
 const icon = chrome.runtime.getURL("images/echo.png");
 const curTab = ref("chat");
+const shouldUpdateVersion = ref(false);
 
 const handleClose = () => {
   emit("close");
@@ -35,9 +37,22 @@ const handleLogout = () => {
     },
   });
 };
+const fetchVersion = async () => {
+  try {
+    const response = await queryAppVersion({
+      version: "1.0.3",
+    });
+    shouldUpdateVersion.value = response;
+  } catch (e) {
+    shouldUpdateVersion.value = false;
+  }
+};
 const handleChangeTab = (type) => {
   curTab.value = type;
 };
+onMounted(async () => {
+  await fetchVersion();
+});
 </script>
 <template>
   <div
@@ -54,6 +69,16 @@ const handleChangeTab = (type) => {
             style="width: 22px; height: 22px; border-radius: 4px"
           /><span class="title">Echo </span></a
         >
+        <div
+          style="font-size: 12px; color: #999; margin-left: 10px"
+          v-if="shouldUpdateVersion"
+        >
+          有版本更新，<a
+            target="_blank"
+            :href="`https://help-doc.oss-cn-beijing.aliyuncs.com/echo-pro.zip?t=${Date.now()}`"
+            >点击下载</a
+          >
+        </div>
       </div>
       <div class="header-center"></div>
       <div class="header-right">
