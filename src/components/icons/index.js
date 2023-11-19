@@ -24,6 +24,8 @@ import ISet from "./set.vue";
 import IExit from "./exit.vue";
 import ICheckOutlined from "./checkOutlined.vue";
 import IMoreOutlined from "./moreOutlined.vue";
+import IOct from "./oct.vue";
+import ICloseCircle from "./closeCircle.vue";
 
 export {
   IArticle,
@@ -52,4 +54,6 @@ export {
   IExit,
   ICheckOutlined,
   IMoreOutlined,
+  IOct,
+  ICloseCircle,
 };

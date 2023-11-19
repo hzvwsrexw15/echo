@@ -24,6 +24,8 @@ import {
   ISet,
   IExit,
   ICheckOutlined,
+  IOct,
+  ICloseCircle,
 } from "./index";
 
 export default {
@@ -53,4 +55,6 @@ export default {
   exit: IExit,
   checkOutlined: ICheckOutlined,
   IMoreOutlined: ICheckOutlined,
+  IOct: IOct,
+  ICloseCircle: ICloseCircle,
 };

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, defineProps, h, defineEmits } from "vue";
 import { message, Spin } from "ant-design-vue";
-import { ICopy, ICheckOutlined } from "../icons";
+import { ICopy, ICheckOutlined, IOct, ICloseCircle } from "../icons";
 import { LoadingOutlined } from "@ant-design/icons-vue";
 
 const props = defineProps({
@@ -16,6 +16,9 @@ const props = defineProps({
   showSuggestions: {
     type: Boolean,
     default: true,
+  },
+  selectText: {
+    type: String,
   },
 });
 
@@ -45,6 +48,9 @@ const handleCopySuccess = () => {
 
 const handleClickSuggestion = (item) => {
   emit("suggest", item);
+};
+const handleCloseSelectionText = () => {
+  emit("clearSection");
 };
 </script>
 <template>
@@ -84,6 +90,20 @@ const handleClickSuggestion = (item) => {
         </div>
       </div>
     </template>
+    <div class="chat-item chat-reply selection-text" v-if="selectText">
+      <div class="feedback message-content-wrap">
+        <div class="chat-content markdown-body gpt-markdown">
+          <div class="tips">
+            <IOct width="12" heigth="12" />
+            选择内容
+          </div>
+          <div class="markdown __markdown light">{{ selectText }}</div>
+          <span class="selection-text-close" @click="handleCloseSelectionText"
+            ><ICloseCircle
+          /></span>
+        </div>
+      </div>
+    </div>
     <div class="chat-item chat-reply" v-if="showLoading">
       <div class="feedback message-content-wrap">
         <div class="chat-content markdown-body gpt-markdown">
@@ -224,5 +244,30 @@ const handleClickSuggestion = (item) => {
   font-size: 13px;
   line-height: 16px;
   color: #225ebe;
+}
+.tips {
+  user-select: none;
+  margin-bottom: 4px;
+  color: #8b949d;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 24px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.selection-text {
+  position: relative;
+}
+.selection-text-close {
+  position: absolute;
+  top: -2px;
+  right: 0px;
+  color: #8b949d;
+  cursor: pointer;
 }
 </style>

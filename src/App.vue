@@ -10,7 +10,6 @@ import AddApiKey from "./components/AddApiKey.vue";
 import { message } from "ant-design-vue";
 import { fetchShortCutList, fetchUpdateShortCut } from "./api/shortCut";
 import { fetchUserInfo } from "./api/user";
-import TextChat from "./pages/TextChat/index.vue";
 
 const globalState = reactive({
   selectionText: "", // 选中文本
@@ -181,7 +180,6 @@ onMounted(async () => {
       @close="globalState.showApiKeyAdd = false"
       @submit="handleUpdateApiKey"
     ></AddApiKey>
-    <TextChat></TextChat>
   </div>
 </template>
 

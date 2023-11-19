@@ -7,7 +7,6 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 import { message } from "ant-design-vue";
-import Select from "ant-design-vue/lib/select/index";
 import showdown from "showdown";
 import { IClose, IPlus, IHistory, IEdit, IArrowDown } from "../icons";
 import {
@@ -17,6 +16,7 @@ import {
   queryPlugins,
   updateChatAiPlugin,
 } from "../../api/openAI";
+import { fetchShortCutDetail } from "../../api/shortCut";
 
 const historyVisible = ref(false);
 const historys = ref([]);
@@ -35,6 +35,7 @@ const showLoading = ref(false);
 const generating = ref(false);
 const plugins = ref([]);
 const usePlugin = ref([]);
+const selectionText = ref("");
 
 const converter = new showdown.Converter();
 
@@ -164,13 +165,14 @@ const handleEnter = async () => {
     chrome.runtime.sendMessage(
       {
         type: "get-sse",
-        url: "/echo/openai/chatNewCompletion",
+        url: "/echo/openai/chatCompletion",
         params: {
           prompt,
           content,
           shortCutId: curChat.value.short_cut_id,
           chat_id: curChat.value._id,
           chat_title: curChat.value.title,
+          selection_text: selectionText.value,
           stream: true,
         },
         from: "chat",
@@ -187,6 +189,18 @@ const handleEnter = async () => {
       userid: curChat.value.userid,
       _id: Date.now(),
     });
+    if (selectionText.value) {
+      chatContentList.value.push({
+        chat_id: curChat.value._id,
+        content: selectionText.value,
+        gmt_create: Date.now(),
+        gmt_update: Date.now(),
+        item_type: "intent",
+        userid: curChat.value.userid,
+        _id: Date.now(),
+      });
+      selectionText.value = "";
+    }
   } catch (e) {
     message.error(e.message);
     showLoading.value = false;
@@ -207,19 +221,22 @@ const initData = async () => {
 const handleClickSuggestion = (item) => {
   textareaContent.value = item;
 };
-const getPopupContainer = () => {
-  return document
-    .querySelector("#echo-content-root")
-    .shadowRoot.querySelector(".plugin-container");
+const handleClearSection = () => {
+  selectionText.value = "";
 };
+// const getPopupContainer = () => {
+//   return document
+//     .querySelector("#echo-content-root")
+//     .shadowRoot.querySelector(".plugin-container");
+// };
 
-const handleSelectPlugin = async (value, option) => {
-  const result = await updateChatAiPlugin({
-    id: curChat.value._id,
-    plugins: value,
-  });
-  return result;
-};
+// const handleSelectPlugin = async (value, option) => {
+//   const result = await updateChatAiPlugin({
+//     id: curChat.value._id,
+//     plugins: value,
+//   });
+//   return result;
+// };
 
 onMounted(async () => {
   await initData();
@@ -245,6 +262,18 @@ onMounted(async () => {
     sendResponse(true);
     return true;
   });
+  document.addEventListener("selectionchange", (event) => {
+    try {
+      const selection = document.getSelection();
+      const text = selection.toString();
+      // const oRange = selection.getRangeAt(0); //get the text range
+      // const oRect = oRange.getBoundingClientRect();
+      if (text) {
+        selectionText.value = text;
+      }
+      // console.log(oRect, text);
+    } catch (e) {}
+  });
 });
 </script>
 <template>
@@ -256,7 +285,9 @@ onMounted(async () => {
             <ChatCard
               :list="chatContentList"
               :showLoading="showLoading"
+              :select-text="selectionText"
               @suggest="handleClickSuggestion"
+              @clearSection="handleClearSection"
             >
               <template v-slot:more>
                 <More
@@ -286,30 +317,6 @@ onMounted(async () => {
                 >
                   <IHistory width="15" height="15"></IHistory>
                   <span>会话记录</span>
-                </div>
-                <div
-                  class="btn echo-btn toolbar-btn outline primary-outline-button small-button plugin-container"
-                  style="font-weight: normal"
-                >
-                  <Select
-                    v-model:value="usePlugin"
-                    :options="
-                      plugins.map((item) => ({
-                        value: item.name,
-                        label: item.displayName,
-                      }))
-                    "
-                    mode="multiple"
-                    size="small"
-                    placeholder="请选择插件"
-                    style="width: 150px"
-                    :bordered="false"
-                    :filterOption="false"
-                    :maxTagCount="1"
-                    :getPopupContainer="getPopupContainer"
-                    @change="handleSelectPlugin"
-                  >
-                  </Select>
                 </div>
               </div>
             </div>
