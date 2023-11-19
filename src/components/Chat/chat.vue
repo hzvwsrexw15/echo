@@ -140,6 +140,17 @@ const handleEnter = async () => {
     return message.error("会话中,请稍后再试!");
   }
   const content = textareaContent.value;
+  if (selectionText.value) {
+    chatContentList.value.push({
+      chat_id: curChat.value._id,
+      content: selectionText.value,
+      gmt_create: Date.now(),
+      gmt_update: Date.now(),
+      item_type: "intent",
+      userid: curChat.value.userid,
+      _id: Date.now(),
+    });
+  }
   chatContentList.value.push({
     chat_id: curChat.value._id,
     content,
@@ -189,18 +200,7 @@ const handleEnter = async () => {
       userid: curChat.value.userid,
       _id: Date.now(),
     });
-    if (selectionText.value) {
-      chatContentList.value.push({
-        chat_id: curChat.value._id,
-        content: selectionText.value,
-        gmt_create: Date.now(),
-        gmt_update: Date.now(),
-        item_type: "intent",
-        userid: curChat.value.userid,
-        _id: Date.now(),
-      });
-      selectionText.value = "";
-    }
+    selectionText.value = "";
   } catch (e) {
     message.error(e.message);
     showLoading.value = false;
