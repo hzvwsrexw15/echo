@@ -90,14 +90,6 @@ Chat GPT chrome extension 助手，类似 monica，基于 GPT-3.5 API，免费�
 
 [![Watch the video](./images/WX20230814-221400@2x.png)](./static/knowledge.mov)
 
-#### 写作辅助
-
-在进行在线文档写作过程中，可使用”ctrl + m“快捷键，调出 Echo 会话界面，输入需要协助的内容后，按 Enter，便自动将内容写入文档，目前支持石墨文档、腾讯文档
-如，进入石墨文档，在编辑页中，按”ctrl + m“快捷键，输入”给一份北京旅游计划“后，按 enter，结果如下：
-
-![document](./images/WX20230604-184604%402x.png)
-![document](./images/WX20230604-184645@2x.png)
-
 ### 反馈建议
 
 1. 提 <a href="https://github.com/hzvwsrexw15/echo/issues">Issues</a>
